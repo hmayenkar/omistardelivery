@@ -1,0 +1,164 @@
+# Prepare the delivery boy web app project using React + Tailwind CSS
+delivery_dir = "/mnt/data/omistar_delivery_web"
+os.makedirs(f"{delivery_dir}/src/components", exist_ok=True)
+os.makedirs(f"{delivery_dir}/src/pages", exist_ok=True)
+os.makedirs(f"{delivery_dir}/public", exist_ok=True)
+
+# File contents
+files = {
+    "src/index.js": """
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './pages/App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+""",
+
+    "src/index.css": """
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+""",
+
+    "src/pages/App.js": """
+import React, { useState } from 'react';
+import Login from '../components/Login';
+import OrdersList from '../components/OrdersList';
+
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [deliveryId, setDeliveryId] = useState('');
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {isLoggedIn ? (
+        <OrdersList deliveryId={deliveryId} />
+      ) : (
+        <Login setIsLoggedIn={setIsLoggedIn} setDeliveryId={setDeliveryId} />
+      )}
+    </div>
+  );
+}
+
+export default App;
+""",
+
+    "src/components/Login.js": """
+import React, { useState } from 'react';
+
+const Login = ({ setIsLoggedIn, setDeliveryId }) => {
+  const [inputId, setInputId] = useState('');
+
+  const handleLogin = () => {
+    if (inputId) {
+      setDeliveryId(inputId);
+      setIsLoggedIn(true);
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="bg-white p-6 rounded shadow w-96">
+        <h2 className="text-xl font-semibold mb-4">Delivery Login</h2>
+        <input
+          type="text"
+          placeholder="Enter Delivery ID"
+          className="w-full p-2 border mb-4 rounded"
+          value={inputId}
+          onChange={(e) => setInputId(e.target.value)}
+        />
+        <button onClick={handleLogin} className="w-full bg-blue-600 text-white p-2 rounded">
+          Login
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+""",
+
+    "src/components/OrdersList.js": """
+import React, { useEffect, useState } from 'react';
+
+const dummyOrders = [
+  {
+    id: 'order001',
+    customer: 'Ravi Kumar',
+    address: '123 MG Road',
+    phone: '9876543210',
+    status: 'Pending',
+    price: 250
+  },
+  {
+    id: 'order002',
+    customer: 'Neha Sharma',
+    address: '45 Lakeview St',
+    phone: '9876541230',
+    status: 'Picked',
+    price: 300
+  }
+];
+
+const OrdersList = ({ deliveryId }) => {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    // Simulate fetching assigned orders
+    setOrders(dummyOrders);
+  }, []);
+
+  const handleStatusChange = (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    );
+  };
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Assigned Orders for {deliveryId}</h2>
+      <div className="grid gap-4">
+        {orders.map((order) => (
+          <div key={order.id} className="bg-white p-4 rounded shadow">
+            <h3 className="text-lg font-semibold">{order.customer}</h3>
+            <p>{order.address}</p>
+            <p>{order.phone}</p>
+            <p>Price: ₹{order.price}</p>
+            <p>Status: <strong>{order.status}</strong></p>
+            <div className="mt-2 space-x-2">
+              {order.status !== 'Picked' && (
+                <button
+                  onClick={() => handleStatusChange(order.id, 'Picked')}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded"
+                >
+                  Mark as Picked
+                </button>
+              )}
+              {order.status !== 'Delivered' && (
+                <button
+                  onClick={() => handleStatusChange(order.id, 'Delivered')}
+                  className="px-3 py-1 bg-green-600 text-white rounded"
+                >
+                  Mark as Delivered
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default OrdersList;
+"""
+}
+}
